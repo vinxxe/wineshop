@@ -240,30 +240,7 @@ class ItemListTabState extends State<ItemListTab> {
                 },
                 child: const Icon(Icons.file_download), // Use a suitable icon
               )
-            ])
-/*
-      bottomNavigationBar: BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              onPressed: () {
-                // Implement navigation to other tabs if needed
-              },
-              icon: Icon(Icons.tab),
-            ),
-            IconButton(
-              onPressed: () {
-                // Implement navigation to other tabs if needed
-              },
-              icon: Icon(Icons.tab),
-            ),
-          ],
-        ),
-      ),
-*/
-        );
+            ]));
   }
 
   Future<List<Item>> _getItems(String? filter) async {
@@ -277,12 +254,6 @@ class ItemListTabState extends State<ItemListTab> {
       final lowerCaseFilter = filter.toLowerCase();
       return item.name.toLowerCase().contains(lowerCaseFilter);
     }).toList();
-
-    // for (final item in filteredItems) {
-    //   if (item.image != null) {
-    //     item.image = await widget.dbHelper.getItemImage(item.id);
-    //   }
-    // }
 
     return filteredItems;
   }
