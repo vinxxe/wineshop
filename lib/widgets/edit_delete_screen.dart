@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'dart:typed_data';
-import 'package:wine_shop/models/item.dart'; // Adjust import path as needed
-import 'package:wine_shop/database/db_helper.dart'; // Adjust import path as needed
+import 'package:wine_shop/models/item.dart';
+import 'package:wine_shop/database/db_helper.dart';
 
 class EditDeleteScreen extends StatefulWidget {
   final Item item;
@@ -38,13 +38,15 @@ class EditDeleteScreenState extends State<EditDeleteScreen> {
           price: newPrice,
           image: _imageBytes);
       await DatabaseHelper.instance.updateItem(widget.item.id, updatedItem);
-      if (context.mounted) Navigator.pop(context, true); // Go back to previous screen
+      if (context.mounted)
+        Navigator.pop(context, true); // Go back to previous screen
     }
   }
 
   void _deleteItem() async {
     await DatabaseHelper.instance.deleteItem(widget.item.id);
-    if (context.mounted) Navigator.pop(context, true); // Go back to previous screen
+    if (context.mounted)
+      Navigator.pop(context, true); // Go back to previous screen
   }
 
   Future<void> _takePicture() async {

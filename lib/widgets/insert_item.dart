@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'dart:typed_data';
-import 'package:wine_shop/models/item.dart'; // Adjust import path as needed
-import 'package:wine_shop/database/db_helper.dart'; // Adjust import path as needed
-import 'item_list_tab.dart'; // Adjust import path as needed
+import 'package:wine_shop/models/item.dart';
+import 'package:wine_shop/database/db_helper.dart';
+import 'item_list_tab.dart';
 
 class ItemInsert extends StatefulWidget {
   static final GlobalKey<ItemInsertState> scaffoldKey = GlobalKey();
