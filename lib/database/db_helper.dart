@@ -1,6 +1,4 @@
 import 'package:sqflite/sqflite.dart';
-import 'dart:io';
-import 'package:csv/csv.dart';
 import 'package:wine_shop/models/item.dart';
 
 class DatabaseHelper {
@@ -19,39 +17,13 @@ class DatabaseHelper {
     return _database!;
   }
 
-  Future<Database> _initDatabase() async {
-    final dbPath = await getDatabasesPath();
-    final path = '$dbPath/$tableItemsName.db';
-
-    return await openDatabase(path, version: 1, onCreate: _createDatabase);
-  }
-
-  Future<void> _createDatabase(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE $tableItemsName (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE,
-        price REAL,
-        image BLOB
-      )
-    ''');
-  }
-
-  Future<int> insertItem(Item item) async {
-    final db = await database;
-    return await db.insert(tableItemsName, item.toMap());
-  }
-
-  Future<double?> getPriceByName(String name) async {
-    final db = await database;
-    final result =
-        await db.query(tableItemsName, where: 'name = ?', whereArgs: [name]);
-
-    if (result.isEmpty) {
-      return null;
-    }
-
-    return result.first['price'] as double?;
+  Future<void> deleteItem(int id) async {
+    final db = await instance.database;
+    await db.delete(
+      tableItemsName,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<List<Item>> getAllItemsOrderedByName() async {
@@ -66,6 +38,23 @@ class DatabaseHelper {
     return result.map((json) => Item.fromMap(json)).toList();
   }
 
+  Future<double?> getPriceByName(String name) async {
+    final db = await database;
+    final result =
+        await db.query(tableItemsName, where: 'name = ?', whereArgs: [name]);
+
+    if (result.isEmpty) {
+      return null;
+    }
+
+    return result.first['price'] as double?;
+  }
+
+  Future<int> insertItem(Item item) async {
+    final db = await database;
+    return await db.insert(tableItemsName, item.toMap());
+  }
+
   Future<void> updateItem(int id, Item updatedItem) async {
     final db = await instance.database;
     await db.update(
@@ -76,23 +65,21 @@ class DatabaseHelper {
     );
   }
 
-  Future<void> deleteItem(int id) async {
-    final db = await instance.database;
-    await db.delete(
-      tableItemsName,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+  Future<void> _createDatabase(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE $tableItemsName (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        price REAL,
+        image BLOB
+      )
+    ''');
   }
 
-  // Export database to a CSV file
-  Future<void> exportDatabaseToCSV(String exportPath) async {
-    final items = await getAllItemsOrderedByName(); // Query items from database
+  Future<Database> _initDatabase() async {
+    final dbPath = await getDatabasesPath();
+    final path = '$dbPath/$tableItemsName.db';
 
-    final csvRows = items.map((item) => [item.name, item.price]).toList();
-    final csvString = const ListToCsvConverter().convert(csvRows);
-
-    final file = File(exportPath);
-    await file.writeAsString(csvString);
+    return await openDatabase(path, version: 1, onCreate: _createDatabase);
   }
 }

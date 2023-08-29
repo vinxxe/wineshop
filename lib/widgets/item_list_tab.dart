@@ -1,15 +1,17 @@
 import 'dart:io'; // Import the dart:io package for File class
-import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+
 import 'package:csv/csv.dart';
-import 'package:wine_shop/models/item.dart';
+import 'package:flutter/material.dart';
+import 'package:path/path.dart' as path;
 import 'package:wine_shop/database/db_helper.dart';
-import 'edit_delete_screen.dart';
+import 'package:wine_shop/models/item.dart';
 import 'package:wine_shop/utils/utils.dart';
 
+import 'edit_delete_screen.dart';
+
 class ItemListTab extends StatefulWidget {
-  final DatabaseHelper dbHelper;
   static final GlobalKey<ItemListTabState> scaffoldKey = GlobalKey();
+  final DatabaseHelper dbHelper;
 
   ItemListTab({required this.dbHelper}) : super(key: scaffoldKey);
 
@@ -20,68 +22,7 @@ class ItemListTab extends StatefulWidget {
 class ItemListTabState extends State<ItemListTab> {
   bool shouldUpdateList = false; // State variable to track update
   String _filterKeyword = ''; // Initialize with an empty string
-
-  Future<String> getExtDir() async {
-    Directory? dir;
-    if (Platform.isAndroid) {
-      dir = await getExternalStorageDirectory();
-    } else if (Platform.isIOS) {
-      dir = await getApplicationDocumentsDirectory();
-    } else {
-      // Handle other platforms or throw an error
-      throw UnsupportedError('Unsupported platform');
-    }
-
-    if (dir != null) {
-      return dir.path;
-    } else {
-      return '';
-    }
-  }
-
-  Future<void> loadCSVFileIntoDatabase(File file) async {
-    final String csvString = await file.readAsString();
-    final List<List<dynamic>> csvTable =
-        const CsvToListConverter().convert(csvString);
-
-    // Assuming the CSV file format is [name, price]
-    for (final row in csvTable) {
-      final name = row[0].toString();
-      final price = double.tryParse(row[1].toString()) ?? 0.0;
-
-      if (name.isNotEmpty) {
-        final newItem = Item(name: name, price: price, image: null);
-        await widget.dbHelper.insertItem(newItem);
-      }
-    }
-
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('CSV file loaded into database')),
-      );
-    }
-
-    setState(() {
-      shouldUpdateList = true;
-    });
-  }
-
-  Future<void> exportDatabaseToCSV(String fileName) async {
-    final directory = await getExtDir();
-    final file = File('$directory/$fileName.csv');
-
-    final items = await widget.dbHelper.getAllItemsOrderedByName();
-    final csvRows = items.map((item) => [item.name, item.price]).toList();
-    final csvString = const ListToCsvConverter().convert(csvRows);
-
-    await file.writeAsString(csvString);
-
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Database exported to ${file.path}')),
-      );
-    }
-  }
+  String _workingDir = '';
 
   @override
   Widget build(BuildContext context) {
@@ -194,10 +135,28 @@ class ItemListTabState extends State<ItemListTab> {
               FloatingActionButton(
                 heroTag: "ht3",
                 onPressed: () async {
-                  final File? file =
-                      await Utils.pickCSVFile(); // Use your utility method
-                  if (file != null) {
-                    await loadCSVFileIntoDatabase(file);
+                  String workingDir = await Utils.getExtDir();
+                  setState(() {
+                    _workingDir = workingDir; // Set the working dir
+                  });
+                },
+                tooltip: 'Set the working dir',
+                child: const Icon(Icons.folder_shared),
+              ),
+              const SizedBox(height: 16),
+              FloatingActionButton(
+                heroTag: "ht4",
+                onPressed: () async {
+                  if (_workingDir.isNotEmpty) {
+                    final String? filePath = await Utils.pickCSVFile();
+                    if (filePath != null) {
+                      await loadCSVFileIntoDatabase(filePath);
+                    }
+                  } else {
+                    if (context.mounted) {
+                      Utils.usrMsg(
+                          context, "DIR ERROR", "no working dir chosen");
+                    }
                   }
                 },
                 tooltip: 'Load CSV',
@@ -205,42 +164,128 @@ class ItemListTabState extends State<ItemListTab> {
               ),
               const SizedBox(height: 16),
               FloatingActionButton(
-                heroTag: "ht4",
+                heroTag: "ht5",
                 onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      final exportFileNameController = TextEditingController();
-                      return AlertDialog(
-                        title: const Text('Export Database to CSV'),
-                        content: TextField(
-                          controller: exportFileNameController,
-                          decoration:
-                              const InputDecoration(labelText: 'File Name'),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              final fileName = exportFileNameController.text;
-                              if (fileName.isNotEmpty) {
-                                exportDatabaseToCSV(fileName);
-                                Navigator.pop(context);
-                              }
-                            },
-                            child: const Text('Export'),
+                  if (_workingDir.isNotEmpty) {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        final exportFileNameController =
+                            TextEditingController();
+                        return AlertDialog(
+                          title: const Text('Export Database to CSV'),
+                          content: TextField(
+                            controller: exportFileNameController,
+                            decoration:
+                                const InputDecoration(labelText: 'File Name'),
                           ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Cancel'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                final fileName = exportFileNameController.text;
+                                if (fileName.isNotEmpty) {
+                                  exportDatabaseToCSV(fileName);
+                                  Navigator.pop(context);
+                                }
+                              },
+                              child: const Text('Export'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Cancel'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  } else {
+                    if (context.mounted) {
+                      Utils.usrMsg(
+                          context, "DIR ERROR", "no working dir chosen");
+                    }
+                  }
                 },
                 child: const Icon(Icons.file_download), // Use a suitable icon
               )
             ]));
+  }
+
+  Future<void> exportDatabaseToCSV(String fileName) async {
+    final file = File('$_workingDir/$fileName.csv');
+
+    final items = await widget.dbHelper.getAllItemsOrderedByName();
+    final csvRows = items.map((item) => [item.name, item.price]).toList();
+    final csvString = const ListToCsvConverter().convert(csvRows);
+
+    await file.writeAsString(csvString);
+    await Utils.createDirectoryIfNotExists('$_workingDir/$fileName');
+
+    for (var item in items) {
+      if (item.image != null) {
+        final file = File('$_workingDir/$fileName/${item.name}.jpg');
+        await file.writeAsBytes(item.image!);
+      }
+    }
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Database exported to ${file.path}')),
+      );
+    }
+  }
+
+  Future<void> loadCSVFileIntoDatabase(String filePath) async {
+    final basename = path.basename(filePath);
+    final dirbasename = path.basenameWithoutExtension(basename);
+
+    final file = File('$_workingDir/$basename');
+    final String csvString = await file.readAsString();
+    final List<List<dynamic>> csvTable =
+        const CsvToListConverter().convert(csvString);
+    bool dirExists = false;
+
+    if (await Utils.doesDirectoryExist('$_workingDir/$dirbasename')) {
+      dirExists = true;
+    }
+
+    // Assuming the CSV file format is [name, price]
+    for (final row in csvTable) {
+      final name = row[0].toString();
+      final price = double.tryParse(row[1].toString()) ?? 0.0;
+
+      if (name.isNotEmpty) {
+        Item newItem;
+        if (dirExists) {
+          final file = File('$_workingDir/$dirbasename/$name.jpg');
+          if (await file.exists()) {
+            newItem =
+                Item(name: name, price: price, image: await file.readAsBytes());
+          } else {
+            newItem = Item(name: name, price: price, image: null);
+          }
+        } else {
+          newItem = Item(name: name, price: price, image: null);
+        }
+        try {
+          await widget.dbHelper.insertItem(newItem);
+        } catch (e) {
+          if (context.mounted) {
+            Utils.usrMsg(context, "DB exception",
+                "Maybe the item's name ${newItem.name} is already present");
+          }
+        }
+      }
+    }
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('CSV file loaded into database')),
+      );
+    }
+
+    setState(() {
+      shouldUpdateList = true;
+    });
   }
 
   Future<List<Item>> _getItems(String? filter) async {
