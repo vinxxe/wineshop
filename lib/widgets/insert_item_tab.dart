@@ -25,8 +25,8 @@ class ItemInsertState extends State<ItemInsertTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
+      body: Container(
+        margin: const EdgeInsets.all(8.0), // Add margin of 16.0 pixels on all sides
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
