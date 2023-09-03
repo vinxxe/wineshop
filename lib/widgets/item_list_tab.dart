@@ -13,9 +13,10 @@ import 'edit_delete_screen.dart';
 class ItemListTab extends StatefulWidget {
   static final GlobalKey<ItemListTabState> scaffoldKey = GlobalKey();
   final DatabaseHelper dbHelper;
-  final GlobalInfo     globalInfo;
+  final GlobalInfo globalInfo;
 
-  ItemListTab({required this.dbHelper, required this.globalInfo}) : super(key: scaffoldKey);
+  ItemListTab({required this.dbHelper, required this.globalInfo})
+      : super(key: scaffoldKey);
 
   @override
   ItemListTabState createState() => ItemListTabState();
@@ -215,11 +216,13 @@ class ItemListTabState extends State<ItemListTab> {
     final csvString = const ListToCsvConverter().convert(csvRows);
 
     await file.writeAsString(csvString);
-    await Utils.createDirectoryIfNotExists('${widget.globalInfo.workingFolder}/$fileName');
+    await Utils.createDirectoryIfNotExists(
+        '${widget.globalInfo.workingFolder}/$fileName');
 
     for (var item in items) {
       if (item.image != null) {
-        final file = File('${widget.globalInfo.workingFolder}/$fileName/${item.name}.jpg');
+        final file = File(
+            '${widget.globalInfo.workingFolder}/$fileName/${item.name}.jpg');
         await file.writeAsBytes(item.image!);
       }
     }
@@ -241,7 +244,8 @@ class ItemListTabState extends State<ItemListTab> {
         const CsvToListConverter().convert(csvString);
     bool dirExists = false;
 
-    if (await Utils.doesDirectoryExist('${widget.globalInfo.workingFolder}/$dirbasename')) {
+    if (await Utils.doesDirectoryExist(
+        '${widget.globalInfo.workingFolder}/$dirbasename')) {
       dirExists = true;
     }
 
@@ -253,7 +257,8 @@ class ItemListTabState extends State<ItemListTab> {
       if (name.isNotEmpty) {
         Item newItem;
         if (dirExists) {
-          final file = File('${widget.globalInfo.workingFolder}/$dirbasename/$name.jpg');
+          final file =
+              File('${widget.globalInfo.workingFolder}/$dirbasename/$name.jpg');
           if (await file.exists()) {
             newItem =
                 Item(name: name, price: price, image: await file.readAsBytes());

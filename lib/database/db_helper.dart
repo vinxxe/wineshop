@@ -2,7 +2,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:wine_shop/models/item.dart';
 
 class DatabaseHelper {
-  static const String tableItemsName = "wineshop";
+  static const String dbName = "wineshop.2";
+  static const String tableItemsName = "wineshop_items";
   static final DatabaseHelper instance = DatabaseHelper._();
   static Database? _database;
 
@@ -28,7 +29,6 @@ class DatabaseHelper {
 
   Future<List<Item>> getAllItemsOrderedByName() async {
     final db = await instance.database;
-
     final result = await db.query(
       tableItemsName,
       // Order by name in ascending order
@@ -68,18 +68,44 @@ class DatabaseHelper {
   Future<void> _createDatabase(Database db, int version) async {
     await db.execute('''
       CREATE TABLE $tableItemsName (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        item_id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,
         price REAL,
-        image BLOB
+        image BLOB,
+        type TEXT,
+        country TEXT,
+        regionr TEXT,
+        vintage INTEGER,
+        stock INTEGER
       )
+    ''');
+
+    await db.execute('''
+    CREATE TABLE Orders (
+    order_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_date TEXT,
+    total_amount REAL,
+    status TEXT
+  )
+    ''');
+
+    await db.execute('''
+    CREATE TABLE Order_Items (
+    order_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id INTEGER NOT NULL,
+    item_name TEXT NOT NULL,
+    quantity INTEGER,
+    subtotal REAL,
+    FOREIGN KEY (order_id) REFERENCES Orders (order_id),
+    FOREIGN KEY (item_name) REFERENCES $tableItemsName (name)
+  )
     ''');
   }
 
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
-    final path = '$dbPath/$tableItemsName.db';
+    final path = '$dbPath/$dbName.db';
 
-    return await openDatabase(path, version: 1, onCreate: _createDatabase);
+    return await openDatabase(path, version: 2, onCreate: _createDatabase);
   }
 }
