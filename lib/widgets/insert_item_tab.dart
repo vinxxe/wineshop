@@ -6,12 +6,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:wine_shop/database/db_helper.dart';
 import 'package:wine_shop/models/item.dart';
 import 'package:wine_shop/utils/utils.dart';
+import 'package:wine_shop/models/global_info.dart';
 
 class ItemInsertTab extends StatefulWidget {
   static final GlobalKey<ItemInsertState> scaffoldKey = GlobalKey();
   final DatabaseHelper dbHelper;
+  final GlobalInfo     globalInfo;
 
-  ItemInsertTab({required this.dbHelper}) : super(key: scaffoldKey);
+  ItemInsertTab({required this.dbHelper, required this.globalInfo}) : super(key: scaffoldKey);
 
   @override
   ItemInsertState createState() => ItemInsertState();
@@ -26,7 +28,7 @@ class ItemInsertState extends State<ItemInsertTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        margin: const EdgeInsets.all(8.0), // Add margin of 16.0 pixels on all sides
+        margin: const EdgeInsets.all(8.0), // Add margin of 8.0 pixels on all sides
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

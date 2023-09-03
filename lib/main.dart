@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'widgets/insert_item_tab.dart';
 import 'widgets/item_list_tab.dart';
 import 'database/db_helper.dart';
+import 'models/global_info.dart';
 
 void main() {
   runApp(const WineShopApp());
@@ -22,7 +23,8 @@ class WineShopApp extends StatelessWidget {
 }
 
 class WineShopHomePage extends StatelessWidget {
-  final dbHelper = DatabaseHelper.instance;
+  final dbHelper   = DatabaseHelper.instance;
+  final globalInfo = GlobalInfo.instance;
   WineShopHomePage({super.key});
 
   @override
@@ -40,9 +42,9 @@ class WineShopHomePage extends StatelessWidget {
       body: TabBarView(
         children: [
             // Content for the first tab (Insert Item)
-          ItemInsertTab(dbHelper: dbHelper),
+          ItemInsertTab(dbHelper: dbHelper, globalInfo: globalInfo),
           // Content for the second tab (List Items)
-          ItemListTab(dbHelper: dbHelper),
+          ItemListTab(dbHelper: dbHelper, globalInfo: globalInfo),
         ],
       ),
     );

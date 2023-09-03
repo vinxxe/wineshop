@@ -6,14 +6,16 @@ import 'package:path/path.dart' as path;
 import 'package:wine_shop/database/db_helper.dart';
 import 'package:wine_shop/models/item.dart';
 import 'package:wine_shop/utils/utils.dart';
+import 'package:wine_shop/models/global_info.dart';
 
 import 'edit_delete_screen.dart';
 
 class ItemListTab extends StatefulWidget {
   static final GlobalKey<ItemListTabState> scaffoldKey = GlobalKey();
   final DatabaseHelper dbHelper;
+  final GlobalInfo     globalInfo;
 
-  ItemListTab({required this.dbHelper}) : super(key: scaffoldKey);
+  ItemListTab({required this.dbHelper, required this.globalInfo}) : super(key: scaffoldKey);
 
   @override
   ItemListTabState createState() => ItemListTabState();
@@ -22,7 +24,6 @@ class ItemListTab extends StatefulWidget {
 class ItemListTabState extends State<ItemListTab> {
   bool shouldUpdateList = false; // State variable to track update
   String _filterKeyword = ''; // Initialize with an empty string
-  String _workingDir = '';
 
   @override
   Widget build(BuildContext context) {
@@ -134,10 +135,7 @@ class ItemListTabState extends State<ItemListTab> {
               FloatingActionButton(
                 heroTag: "ht3",
                 onPressed: () async {
-                  String workingDir = await Utils.getExtDir();
-                  setState(() {
-                    _workingDir = workingDir; // Set the working dir
-                  });
+                  widget.globalInfo.workingFolder = await Utils.getExtDir();
                 },
                 tooltip: 'Set the working dir',
                 child: const Icon(Icons.folder_shared),
@@ -146,7 +144,7 @@ class ItemListTabState extends State<ItemListTab> {
               FloatingActionButton(
                 heroTag: "ht4",
                 onPressed: () async {
-                  if (_workingDir.isNotEmpty) {
+                  if (widget.globalInfo.workingFolder.isNotEmpty) {
                     final String? filePath = await Utils.pickCSVFile();
                     if (filePath != null) {
                       await loadCSVFileIntoDatabase(filePath);
@@ -165,7 +163,7 @@ class ItemListTabState extends State<ItemListTab> {
               FloatingActionButton(
                 heroTag: "ht5",
                 onPressed: () {
-                  if (_workingDir.isNotEmpty) {
+                  if (widget.globalInfo.workingFolder.isNotEmpty) {
                     showDialog(
                       context: context,
                       builder: (context) {
@@ -210,18 +208,18 @@ class ItemListTabState extends State<ItemListTab> {
   }
 
   Future<void> exportDatabaseToCSV(String fileName) async {
-    final file = File('$_workingDir/$fileName.csv');
+    final file = File('${widget.globalInfo.workingFolder}/$fileName.csv');
 
     final items = await widget.dbHelper.getAllItemsOrderedByName();
     final csvRows = items.map((item) => [item.name, item.price]).toList();
     final csvString = const ListToCsvConverter().convert(csvRows);
 
     await file.writeAsString(csvString);
-    await Utils.createDirectoryIfNotExists('$_workingDir/$fileName');
+    await Utils.createDirectoryIfNotExists('${widget.globalInfo.workingFolder}/$fileName');
 
     for (var item in items) {
       if (item.image != null) {
-        final file = File('$_workingDir/$fileName/${item.name}.jpg');
+        final file = File('${widget.globalInfo.workingFolder}/$fileName/${item.name}.jpg');
         await file.writeAsBytes(item.image!);
       }
     }
@@ -237,13 +235,13 @@ class ItemListTabState extends State<ItemListTab> {
     final basename = path.basename(filePath);
     final dirbasename = path.basenameWithoutExtension(basename);
 
-    final file = File('$_workingDir/$basename');
+    final file = File('${widget.globalInfo.workingFolder}/$basename');
     final String csvString = await file.readAsString();
     final List<List<dynamic>> csvTable =
         const CsvToListConverter().convert(csvString);
     bool dirExists = false;
 
-    if (await Utils.doesDirectoryExist('$_workingDir/$dirbasename')) {
+    if (await Utils.doesDirectoryExist('${widget.globalInfo.workingFolder}/$dirbasename')) {
       dirExists = true;
     }
 
@@ -255,7 +253,7 @@ class ItemListTabState extends State<ItemListTab> {
       if (name.isNotEmpty) {
         Item newItem;
         if (dirExists) {
-          final file = File('$_workingDir/$dirbasename/$name.jpg');
+          final file = File('${widget.globalInfo.workingFolder}/$dirbasename/$name.jpg');
           if (await file.exists()) {
             newItem =
                 Item(name: name, price: price, image: await file.readAsBytes());
