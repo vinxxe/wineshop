@@ -27,7 +27,6 @@ class ItemListTabState extends State<ItemListTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text('Item List')),
         body: FutureBuilder<List<Item>>(
           future: _getItems(_filterKeyword),
           builder: (context, snapshot) {
