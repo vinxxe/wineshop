@@ -76,29 +76,39 @@ class DatabaseHelper {
         country INTEGER,
         region INTEGER,
         vintage INTEGER,
-        stock INTEGER
+        stock INTEGER,
+        sold INTEGER,
+        producer INTEGER NOT NULL,
+        FOREIGN KEY (producer) REFERENCES Producers (producer_id)
       )
     ''');
 
     await db.execute('''
-    CREATE TABLE Orders (
-    order_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    order_date TEXT,
-    total_amount REAL,
-    status INTEGER
-  )
+      CREATE TABLE Producers (
+        producer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        producer_name TEXT NON NULL UNIQUE
+      )
     ''');
 
     await db.execute('''
-    CREATE TABLE Order_Items (
-    order_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    order_id INTEGER NOT NULL,
-    item_name TEXT NOT NULL,
-    quantity INTEGER,
-    subtotal REAL,
-    FOREIGN KEY (order_id) REFERENCES Orders (order_id),
-    FOREIGN KEY (item_name) REFERENCES $tableItemsName (name)
-  )
+      CREATE TABLE Orders (
+        order_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_date TEXT,
+        total_amount REAL,
+        status INTEGER
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE Order_Items (
+        order_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_id INTEGER NOT NULL,
+        item_name TEXT NOT NULL,
+        quantity INTEGER,
+        subtotal REAL,
+        FOREIGN KEY (order_id) REFERENCES Orders (order_id),
+        FOREIGN KEY (item_name) REFERENCES $tableItemsName (name)
+      )
     ''');
   }
 

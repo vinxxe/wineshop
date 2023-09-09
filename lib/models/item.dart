@@ -156,6 +156,8 @@ class Item {
   Region region;
   int vintage;
   int stock;
+  int sold;
+  int producer;
 
   Item(
       {this.id = 0,
@@ -166,7 +168,9 @@ class Item {
       this.country = Country.none,
       this.region = Region.none,
       this.vintage = 0,
-      this.stock = 1});
+      this.stock = 0,
+      this.sold = 0,
+      this.producer = 0});
 
   factory Item.fromMap(Map<String, dynamic> map) {
     return Item(
@@ -178,7 +182,9 @@ class Item {
         country: CountryExt.getCountry(map['country']),
         region: RegionExt.getRegion(map['region']),
         vintage: map['vintage'],
-        stock: map['stock']);
+        stock: map['stock'],
+        sold: map['sold'],
+        producer: map['producer']);
   }
 
   Map<String, dynamic> toMap() {
@@ -190,7 +196,9 @@ class Item {
       'country': country.id,
       'region': region.id,
       'vintage': vintage,
-      'stock': stock
+      'stock': stock,
+      'sold': sold,
+      'producer': producer
     };
   }
 

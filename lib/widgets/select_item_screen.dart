@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 //import 'package:wine_shop/database/db_helper.dart';
 import 'package:wine_shop/models/item.dart';
@@ -17,7 +15,7 @@ class SelectItemScreen extends StatefulWidget {
 class SelectItemScreenState extends State<SelectItemScreen> {
   int itemCount = 1;
   final TextEditingController countController = TextEditingController();
-  Uint8List? _imageBytes;
+  late Item _item;
 
   @override
   Widget build(BuildContext context) {
@@ -29,18 +27,16 @@ class SelectItemScreenState extends State<SelectItemScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              '${widget.item.name} - \u20AC ${widget.item.price}',
+              '${_item.name} - \u20AC ${_item.price}',
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 20.0),
             ),
             // Container to adjust the alignment of the displayed image
             Container(
               alignment: Alignment.topCenter, // Adjust the alignment as needed
-              child: _imageBytes != null
-                  ? Image.memory(_imageBytes!)
-                  : (widget.item.image != null
-                      ? Image.memory(widget.item.image!)
-                      : const SizedBox()), // You can use any empty widget here
+              child: _item.image != null
+                  ? Image.memory(_item.image!)
+                  : const SizedBox(), // You can use any empty widget here
             ),
             Row(
                 // Align items horizontally in the center
@@ -86,6 +82,7 @@ class SelectItemScreenState extends State<SelectItemScreen> {
   @override
   void initState() {
     super.initState();
+    _item = widget.item;
     countController.text = '$itemCount';
   }
 }
