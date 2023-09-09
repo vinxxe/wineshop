@@ -22,7 +22,7 @@ class DatabaseHelper {
     final db = await instance.database;
     await db.delete(
       tableItemsName,
-      where: 'id = ?',
+      where: 'item_id = ?',
       whereArgs: [id],
     );
   }
@@ -55,13 +55,13 @@ class DatabaseHelper {
     return await db.insert(tableItemsName, item.toMap());
   }
 
-  Future<void> updateItem(int id, Item updatedItem) async {
+  Future<void> updateItem(Item updatedItem) async {
     final db = await instance.database;
     await db.update(
       tableItemsName,
       updatedItem.toMap(),
       where: 'item_id = ?',
-      whereArgs: [id],
+      whereArgs: [updatedItem.id],
     );
   }
 

@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,7 +17,7 @@ class EditDeleteScreen extends StatefulWidget {
 class EditDeleteScreenState extends State<EditDeleteScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
-  Uint8List? _imageBytes;
+  late Item _item;
 
   @override
   Widget build(BuildContext context) {
@@ -42,11 +40,9 @@ class EditDeleteScreenState extends State<EditDeleteScreen> {
             // Container to adjust the alignment of the displayed image
             Container(
               alignment: Alignment.topCenter, // Adjust the alignment as needed
-              child: _imageBytes != null
-                  ? Image.memory(_imageBytes!)
-                  : (widget.item.image != null
-                      ? Image.memory(widget.item.image!)
-                      : const SizedBox()), // You can use any empty widget here
+              child: _item.image != null
+                  ? Image.memory(_item.image!)
+                  : const SizedBox(), // You can use any empty widget here
             ),
             // Button to take a picture
             ElevatedButton(
@@ -71,12 +67,13 @@ class EditDeleteScreenState extends State<EditDeleteScreen> {
   @override
   void initState() {
     super.initState();
-    nameController.text = widget.item.name;
-    priceController.text = widget.item.price.toString();
+    _item = widget.item;
+    nameController.text = _item.name;
+    priceController.text = _item.price.toString();
   }
 
   void _deleteItem() async {
-    await DatabaseHelper.instance.deleteItem(widget.item.id);
+    await DatabaseHelper.instance.deleteItem(_item.id);
     if (context.mounted) {
       Navigator.pop(context, true); // Go back to previous screen
     }
@@ -94,22 +91,17 @@ class EditDeleteScreenState extends State<EditDeleteScreen> {
         minWidth: 300,
       );
       setState(() {
-        _imageBytes = resizedBytes;
+        _item.image = resizedBytes;
       });
     }
   }
 
   void _updateItem() async {
-    final newName = nameController.text;
-    final newPrice = double.tryParse(priceController.text) ?? 0.0;
+    _item.name = nameController.text;
+    _item.price = double.tryParse(priceController.text) ?? 0.0;
 
-    if (newName.isNotEmpty) {
-      final updatedItem = Item(
-          id: widget.item.id,
-          name: newName,
-          price: newPrice,
-          image: _imageBytes);
-      await DatabaseHelper.instance.updateItem(widget.item.id, updatedItem);
+    if (_item.name.isNotEmpty) {
+      await DatabaseHelper.instance.updateItem(_item);
       if (context.mounted) {
         Navigator.pop(context, true); // Go back to previous screen
       }
