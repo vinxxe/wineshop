@@ -2,7 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:wine_shop/models/item.dart';
 
 class DatabaseHelper {
-  static const String dbName = "wineshop.2";
+  static const String dbName = "wineshop.4";
   static const String tableItemsName = "wineshop_items";
   static final DatabaseHelper instance = DatabaseHelper._();
   static Database? _database;
@@ -60,7 +60,7 @@ class DatabaseHelper {
     await db.update(
       tableItemsName,
       updatedItem.toMap(),
-      where: 'id = ?',
+      where: 'item_id = ?',
       whereArgs: [id],
     );
   }
@@ -72,9 +72,9 @@ class DatabaseHelper {
         name TEXT NOT NULL UNIQUE,
         price REAL,
         image BLOB,
-        type TEXT,
-        country TEXT,
-        regionr TEXT,
+        type INTEGER,
+        country INTEGER,
+        region INTEGER,
         vintage INTEGER,
         stock INTEGER
       )
@@ -85,7 +85,7 @@ class DatabaseHelper {
     order_id INTEGER PRIMARY KEY AUTOINCREMENT,
     order_date TEXT,
     total_amount REAL,
-    status TEXT
+    status INTEGER
   )
     ''');
 
