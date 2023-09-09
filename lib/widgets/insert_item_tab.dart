@@ -1,12 +1,15 @@
 import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:wine_shop/database/db_helper.dart';
 import 'package:wine_shop/models/item.dart';
 import 'package:wine_shop/utils/utils.dart';
 import 'package:wine_shop/models/global_info.dart';
+import 'package:wine_shop/widgets/dir_list_screen.dart';
 
 class ItemInsertTab extends StatefulWidget {
   static final GlobalKey<ItemInsertState> scaffoldKey = GlobalKey();
@@ -28,40 +31,60 @@ class ItemInsertState extends State<ItemInsertTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        margin: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: itemNameController,
-              decoration: const InputDecoration(labelText: 'Item Name'),
-            ),
-            TextField(
-              controller: itemPriceController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Item Price'),
-            ),
-            const SizedBox(height: 4),
-            // Container to adjust the alignment of the displayed image
-            Container(
-                alignment:
-                    Alignment.topCenter, // Adjust the alignment as needed
-                child: _imageBytes != null
-                    ? Image.memory(_imageBytes!)
-                    : const SizedBox()),
-            ElevatedButton(
-              onPressed: _takePicture,
-              child: const Text('Take Picture'),
-            ),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: _insertItem,
-              child: const Text('Insert Item'),
-            ),
-          ],
+      body: Stack(children: [
+        Container(
+            margin: const EdgeInsets.all(8.0),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: itemNameController,
+                    decoration: const InputDecoration(labelText: 'Item Name'),
+                  ),
+                  TextField(
+                    controller: itemPriceController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Item Price'),
+                  ),
+                  const SizedBox(height: 4),
+                  // Container to adjust the alignment of the displayed image
+                  Container(
+                      alignment:
+                          Alignment.topCenter, // Adjust the alignment as needed
+                      child: _imageBytes != null
+                          ? Image.memory(_imageBytes!)
+                          : const SizedBox()),
+                  ElevatedButton(
+                    onPressed: _takePicture,
+                    child: const Text('Take Picture'),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: _insertItem,
+                    child: const Text('Insert Item'),
+                  ),
+                ])),
+        Positioned(
+          bottom: 16, // Adjust the distance from the bottom as needed
+          right: 16, // Adjust the distance from the right as needed
+          child: FloatingActionButton(
+            heroTag: "ht1",
+            onPressed: () async {
+              final dbPath = await getDatabasesPath();
+              final Directory dir = Directory(dbPath);
+              if (context.mounted) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => DirListScreen(dir: dir),
+                  ),
+                );
+              }
+            },
+            tooltip: 'DB list',
+            child: const Icon(Icons.folder_open),
+          ),
         ),
-      ),
+      ]),
     );
   }
 

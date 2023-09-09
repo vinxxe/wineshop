@@ -212,7 +212,33 @@ class ItemListTabState extends State<ItemListTab> {
     final file = File('${widget.globalInfo.workingFolder}/$fileName.csv');
 
     final items = await widget.dbHelper.getAllItemsOrderedByName();
-    final csvRows = items.map((item) => [item.name, item.price]).toList();
+    final attributeNames = [
+      'Name',
+      'Price',
+      'Type',
+      'Country',
+      'Region',
+      'Vintage',
+      'Stock',
+      'Sold',
+      'Producer',
+    ];
+
+    final csvRows = [
+      attributeNames, // Add attribute names as the first row
+      ...items.map((item) => [
+            item.name,
+            item.price,
+            item.type.id,
+            item.country.id,
+            item.region.id,
+            item.vintage,
+            item.stock,
+            item.sold,
+            item.producer,
+          ]),
+    ];
+
     final csvString = const ListToCsvConverter().convert(csvRows);
 
     await file.writeAsString(csvString);
@@ -249,31 +275,48 @@ class ItemListTabState extends State<ItemListTab> {
       dirExists = true;
     }
 
-    // Assuming the CSV file format is [name, price]
-    for (final row in csvTable) {
+    // Start processing from the second row (index 1)
+    // to skip the attribute names in the first row.
+    for (int i = 1; i < csvTable.length; i++) {
+      final row = csvTable[i];
       final name = row[0].toString();
       final price = double.tryParse(row[1].toString()) ?? 0.0;
 
       if (name.isNotEmpty) {
-        Item newItem;
+        Item newItem = Item(name: name, price: price, image: null);
+        try {
+          newItem.type =
+              ItemExt.getItemType(int.tryParse(row[2].toString()) ?? 0);
+          newItem.country =
+              CountryExt.getCountry(int.tryParse(row[3].toString()) ?? 0);
+          newItem.region =
+              RegionExt.getRegion(int.tryParse(row[4].toString()) ?? 0);
+          newItem.vintage = int.tryParse(row[5].toString()) ?? 0;
+          newItem.stock = int.tryParse(row[6].toString()) ?? 0;
+          newItem.sold = int.tryParse(row[7].toString()) ?? 0;
+          newItem.producer = int.tryParse(row[8].toString()) ?? 0;
+        } catch (e) {
+          newItem.type = ItemType.none;
+          newItem.country = Country.none;
+          newItem.region = Region.none;
+          newItem.vintage = 0;
+          newItem.stock = 0;
+          newItem.sold = 0;
+          newItem.producer = 0;
+        }
+
         if (dirExists) {
           final file =
               File('${widget.globalInfo.workingFolder}/$dirbasename/$name.jpg');
           if (await file.exists()) {
-            newItem =
-                Item(name: name, price: price, image: await file.readAsBytes());
-          } else {
-            newItem = Item(name: name, price: price, image: null);
+            newItem.image = await file.readAsBytes();
           }
-        } else {
-          newItem = Item(name: name, price: price, image: null);
         }
         try {
           await widget.dbHelper.insertItem(newItem);
         } catch (e) {
           if (context.mounted) {
-            Utils.usrMsg(context, "DB exception",
-                "Maybe the item's name ${newItem.name} is already present");
+            Utils.usrMsg(context, "DB exception", e.toString());
           }
         }
       }

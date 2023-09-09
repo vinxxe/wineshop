@@ -115,7 +115,6 @@ class DatabaseHelper {
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
     final path = '$dbPath/$dbName.db';
-
-    return await openDatabase(path, version: 2, onCreate: _createDatabase);
+    return await openDatabase(path, version: 1, onCreate: _createDatabase);
   }
 }
