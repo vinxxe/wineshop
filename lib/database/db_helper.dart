@@ -84,8 +84,8 @@ class DatabaseHelper {
       CREATE TABLE Users (
         user_id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL,
-        email TEXT NOT NULL,
-        password TEXT NOT NULL,
+        email TEXT,
+        password TEXT,
         first_name TEXT,
         last_name TEXT,
         address TEXT,
