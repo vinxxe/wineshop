@@ -6,15 +6,15 @@ extension ItemExt on ItemType {
   int get id {
     switch (this) {
       case ItemType.none:
-        return 0;
+        return 100;
       case ItemType.redWine:
-        return 1;
+        return 101;
       case ItemType.whiteWine:
-        return 2;
+        return 102;
       case ItemType.roseWine:
-        return 3;
+        return 103;
       case ItemType.sparklingWine:
-        return 4;
+        return 104;
     }
   }
 
@@ -34,15 +34,15 @@ extension CountryExt on Country {
   int get id {
     switch (this) {
       case Country.none:
-        return 0;
+        return 100;
       case Country.italia:
-        return 1;
+        return 101;
       case Country.francia:
-        return 2;
+        return 102;
       case Country.slovenia:
-        return 3;
+        return 103;
       case Country.portogallo:
-        return 4;
+        return 104;
     }
   }
 
@@ -90,49 +90,49 @@ extension RegionExt on Region {
   int get id {
     switch (this) {
       case Region.none:
-        return 0;
+        return 100;
       case Region.abruzzo:
-        return 1;
+        return 101;
       case Region.altoAdige:
-        return 2;
+        return 102;
       case Region.basilicata:
-        return 3;
+        return 103;
       case Region.calabria:
-        return 4;
+        return 104;
       case Region.campania:
-        return 5;
+        return 105;
       case Region.emiliaRomagna:
-        return 6;
+        return 106;
       case Region.friuli:
-        return 7;
+        return 107;
       case Region.lazio:
-        return 8;
+        return 108;
       case Region.liguria:
-        return 9;
+        return 109;
       case Region.lombardia:
-        return 10;
+        return 110;
       case Region.marche:
-        return 11;
+        return 111;
       case Region.molise:
-        return 12;
+        return 112;
       case Region.piemonte:
-        return 13;
+        return 113;
       case Region.puglia:
-        return 14;
+        return 114;
       case Region.toscana:
-        return 15;
+        return 115;
       case Region.trentino:
-        return 16;
+        return 116;
       case Region.sardegna:
-        return 17;
+        return 117;
       case Region.sicilia:
-        return 18;
+        return 118;
       case Region.umbria:
-        return 19;
+        return 119;
       case Region.valDaosta:
-        return 20;
+        return 120;
       case Region.veneto:
-        return 21;
+        return 121;
     }
   }
 
@@ -158,6 +158,7 @@ class Item {
   int stock;
   int sold;
   int producer;
+  String description;
 
   Item(
       {this.id = 0,
@@ -170,7 +171,8 @@ class Item {
       this.vintage = 0,
       this.stock = 0,
       this.sold = 0,
-      this.producer = 0});
+      this.producer = 0,
+      this.description = ""});
 
   factory Item.fromMap(Map<String, dynamic> map) {
     return Item(
@@ -184,7 +186,8 @@ class Item {
         vintage: map['vintage'],
         stock: map['stock'],
         sold: map['sold'],
-        producer: map['producer']);
+        producer: map['producer'],
+        description: map['description']);
   }
 
   Map<String, dynamic> toMap() {
@@ -198,12 +201,159 @@ class Item {
       'vintage': vintage,
       'stock': stock,
       'sold': sold,
-      'producer': producer
+      'producer': producer,
+      'description': description
     };
   }
 
   @override
   String toString() {
     return '$name - \$${price.toStringAsFixed(2)}';
+  }
+}
+
+class OrderItem {
+  int orderItemId;
+  int orderId;
+  String itemName;
+  int quantity;
+  double subtotal;
+
+  OrderItem(
+      {this.orderItemId = 0,
+      this.orderId = 0,
+      required this.itemName,
+      this.quantity = 0,
+      this.subtotal = 0.0});
+
+  Map<String, dynamic> toMap() {
+    return {
+      'order_item_id': orderItemId,
+      'order_id': orderId,
+      'item_name': itemName,
+      'quantity': quantity,
+      'subtotal': subtotal,
+    };
+  }
+
+  factory OrderItem.fromMap(Map<String, dynamic> map) {
+    return OrderItem(
+      orderItemId: map['order_item_id'],
+      orderId: map['order_id'],
+      itemName: map['item_name'],
+      quantity: map['quantity'],
+      subtotal: map['subtotal'],
+    );
+  }
+}
+
+// User class
+class User {
+  int? userId;
+  String username;
+  String email;
+  String password;
+  String? firstName;
+  String? lastName;
+  String? address;
+  String? phoneNumber;
+
+  User({
+    this.userId,
+    required this.username,
+    required this.email,
+    required this.password,
+    this.firstName,
+    this.lastName,
+    this.address,
+    this.phoneNumber,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'user_id': userId,
+      'username': username,
+      'email': email,
+      'password': password,
+      'first_name': firstName,
+      'last_name': lastName,
+      'address': address,
+      'phone_number': phoneNumber,
+    };
+  }
+
+  factory User.fromMap(Map<String, dynamic> map) {
+    return User(
+      userId: map['user_id'],
+      username: map['username'],
+      email: map['email'],
+      password: map['password'],
+      firstName: map['first_name'],
+      lastName: map['last_name'],
+      address: map['address'],
+      phoneNumber: map['phone_number'],
+    );
+  }
+}
+
+// Producer class
+class Producer {
+  int? producerId;
+  String producerName;
+
+  Producer({
+    this.producerId,
+    required this.producerName,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'producer_id': producerId,
+      'producer_name': producerName,
+    };
+  }
+
+  factory Producer.fromMap(Map<String, dynamic> map) {
+    return Producer(
+      producerId: map['producer_id'],
+      producerName: map['producer_name'],
+    );
+  }
+}
+
+// Order class
+class Order {
+  int? orderId;
+  int? userId;
+  DateTime orderDate;
+  double totalAmount;
+  int? status;
+
+  Order({
+    this.orderId,
+    this.userId,
+    required this.orderDate,
+    required this.totalAmount,
+    this.status,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'order_id': orderId,
+      'user_id': userId,
+      'order_date': orderDate.toIso8601String(),
+      'total_amount': totalAmount,
+      'status': status,
+    };
+  }
+
+  factory Order.fromMap(Map<String, dynamic> map) {
+    return Order(
+      orderId: map['order_id'],
+      userId: map['user_id'],
+      orderDate: DateTime.parse(map['order_date']),
+      totalAmount: map['total_amount'],
+      status: map['status'],
+    );
   }
 }
