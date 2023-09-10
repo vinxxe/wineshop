@@ -20,63 +20,85 @@ class SelectItemScreenState extends State<SelectItemScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Select Item')),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              '${_item.name} - \u20AC ${_item.price}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 20.0),
-            ),
-            // Container to adjust the alignment of the displayed image
-            Container(
-              alignment: Alignment.topCenter, // Adjust the alignment as needed
-              child: _item.image != null
-                  ? Image.memory(_item.image!)
-                  : const SizedBox(), // You can use any empty widget here
-            ),
-            Row(
-                // Align items horizontally in the center
-                mainAxisAlignment: MainAxisAlignment.center,
+        appBar: AppBar(title: const Text('Select Item')),
+        body: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.remove),
-                    onPressed: () {
-                      setState(() {
-                        if (itemCount > 1) {
-                          itemCount--;
-                          countController.text = '$itemCount';
-                        }
-                      });
-                    },
+                  Text(
+                    '${_item.name} - \u20AC ${_item.price}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 20.0),
                   ),
+                  // Container to adjust the alignment of the displayed image
+                  Container(
+                    alignment:
+                        Alignment.topCenter, // Adjust the alignment as needed
+                    child: _item.image != null
+                        ? Image.memory(_item.image!)
+                        : const SizedBox(), // You can use any empty widget here
+                  ),
+                  Row(
+                      // Align items horizontally in the center
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove),
+                          onPressed: () {
+                            setState(() {
+                              if (itemCount > 1) {
+                                itemCount--;
+                                countController.text = '$itemCount';
+                              }
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: 100,
+                          child: TextField(
+                            textAlign: TextAlign.center, // Center the text
+                            controller: countController,
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: () {
+                            setState(() {
+                              itemCount++;
+                              countController.text = '$itemCount';
+                            });
+                          },
+                        ),
+                      ]),
                   const SizedBox(height: 8),
-                  SizedBox(
-                    width: 100,
-                    child: TextField(
-                      textAlign: TextAlign.center, // Center the text
-                      controller: countController,
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: () {
-                      setState(() {
-                        itemCount++;
-                        countController.text = '$itemCount';
-                      });
-                    },
-                  ),
-                ]),
-          ],
-        ),
-      ),
-    );
+                  Row(
+                      // Align items horizontally in the center
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            if (context.mounted) {
+                              Navigator.pop(
+                                  context, true); // Go back to previous screen
+                            }
+                          },
+                          child: const Text('Ok'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (context.mounted) {
+                              Navigator.pop(
+                                  context, true); // Go back to previous screen
+                            }
+                          },
+                          child: const Text('Cancel'),
+                        )
+                      ])
+                ])));
   }
 
   @override

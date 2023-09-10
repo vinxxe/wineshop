@@ -1,3 +1,5 @@
+import "order_item.dart";
+
 enum OrderStatus {
   pending, // This status is used when an order is initially created but has not yet been processed or confirmed.
   processing, // The order is being prepared and processed, but it hasn't been shipped or delivered yet.
@@ -59,6 +61,7 @@ class Order {
   DateTime orderDate;
   double totalAmount;
   OrderStatus status;
+  List<OrderItem> items = [];
 
   Order({
     this.orderId = 0,
@@ -86,5 +89,9 @@ class Order {
       totalAmount: map['total_amount'],
       status: OrderStatusExt.getOrderStatus(map['status']),
     );
+  }
+
+  void addOrderItem(OrderItem item) {
+    items.add(item);
   }
 }

@@ -10,4 +10,7 @@ class GlobalInfo {
 
   // String property
   String workingFolder = ""; // Initialize with a default value
+
+  // Last Order id
+  int lastOrderId = -1;
 }

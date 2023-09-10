@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:wine_shop/database/db_helper.dart';
 import 'package:wine_shop/models/item.dart';
+import 'package:wine_shop/models/order.dart';
+import 'package:wine_shop/models/order_item.dart';
 //import 'package:wine_shop/utils/utils.dart';
 import 'package:wine_shop/models/global_info.dart';
 
@@ -75,6 +77,19 @@ class ItemOrderTabState extends State<ItemOrderTab> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               FloatingActionButton(
+                heroTag: "ht11",
+                onPressed: () async {
+                  Order? lastOrder = await widget.dbHelper
+                      .getOrder(widget.globalInfo.lastOrderId);
+                  setState(() {
+                    _filterKeyword = ''; // Clear the filter keyword
+                  });
+                },
+                tooltip: 'Create Order',
+                child: const Icon(Icons.add_shopping_cart_rounded),
+              ),
+              const SizedBox(height: 16),
+              FloatingActionButton(
                 heroTag: "ht10",
                 onPressed: () async {
                   final filter = await showDialog<String>(
@@ -130,7 +145,6 @@ class ItemOrderTabState extends State<ItemOrderTab> {
                 tooltip: 'Clear Filter',
                 child: const Icon(Icons.clear),
               ),
-              const SizedBox(height: 16),
             ]));
   }
 
