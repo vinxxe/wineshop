@@ -27,6 +27,20 @@ class DatabaseHelper {
     );
   }
 
+  Future<int> getProducerID(String prodName) async {
+    int res = 0;
+    final db = await instance.database;
+    final List<Map<String, dynamic>> result = await db.query(
+      "Producers",
+      where: 'producer_name = ?',
+      whereArgs: [prodName],
+    );
+    if (result.isNotEmpty) {
+      res = result[0]['producer_id'] as int;
+    }
+    return res;
+  }
+
   Future<List<Item>> getAllItemsOrderedByName() async {
     final db = await instance.database;
     final result = await db.query(
@@ -67,20 +81,19 @@ class DatabaseHelper {
 
   Future<void> _createDatabase(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE $tableItemsName (
-        item_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE,
-        price REAL,
-        image BLOB,
-        type INTEGER,
-        country INTEGER,
-        region INTEGER,
-        vintage INTEGER,
-        stock INTEGER,
-        sold INTEGER,
-        producer INTEGER NOT NULL,
-        FOREIGN KEY (producer) REFERENCES Producers (producer_id)
+      CREATE TABLE Users (
+        user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        email TEXT NOT NULL,
+        password TEXT NOT NULL,
+        first_name TEXT,
+        last_name TEXT,
+        address TEXT,
+        phone_number TEXT
       )
+    ''');
+    await db.execute('''
+      INSERT OR IGNORE INTO Users (user_id, username, email, password) VALUES (100, 'NONE','NONE','NONE');
     ''');
 
     await db.execute('''
@@ -91,11 +104,35 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
+      INSERT OR IGNORE INTO Producers (producer_id, producer_name) VALUES (100, 'NONE');
+    ''');
+
+    await db.execute('''
+      CREATE TABLE $tableItemsName (
+        item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        price REAL NOT NULL,
+        image BLOB,
+        type INTEGER NOT NULL,
+        country INTEGER NOT NULL,
+        region INTEGER NOT NULL,
+        vintage INTEGER,
+        stock INTEGER,
+        sold INTEGER,
+        producer INTEGER NOT NULL,
+        description TEXT,
+        FOREIGN KEY (producer) REFERENCES Producers (producer_id)
+      )
+    ''');
+
+    await db.execute('''
       CREATE TABLE Orders (
         order_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        order_date TEXT,
-        total_amount REAL,
-        status INTEGER
+        user_id INTEGER,
+        order_date DATE NOT NULL,
+        total_amount REAL NOT NULL,
+        status INTEGER,
+        FOREIGN KEY (user_id) REFERENCES Users(user_id)
       )
     ''');
 
@@ -104,8 +141,8 @@ class DatabaseHelper {
         order_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
         order_id INTEGER NOT NULL,
         item_name TEXT NOT NULL,
-        quantity INTEGER,
-        subtotal REAL,
+        quantity INTEGER NOT NULL,
+        subtotal REAL NOT NULL,
         FOREIGN KEY (order_id) REFERENCES Orders (order_id),
         FOREIGN KEY (item_name) REFERENCES $tableItemsName (name)
       )

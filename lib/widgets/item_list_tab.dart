@@ -222,6 +222,7 @@ class ItemListTabState extends State<ItemListTab> {
       'Stock',
       'Sold',
       'Producer',
+      'Description'
     ];
 
     final csvRows = [
@@ -236,6 +237,7 @@ class ItemListTabState extends State<ItemListTab> {
             item.stock,
             item.sold,
             item.producer,
+            item.description
           ]),
     ];
 
@@ -295,6 +297,7 @@ class ItemListTabState extends State<ItemListTab> {
           newItem.stock = int.tryParse(row[6].toString()) ?? 0;
           newItem.sold = int.tryParse(row[7].toString()) ?? 0;
           newItem.producer = int.tryParse(row[8].toString()) ?? 0;
+          newItem.description = row[9];
         } catch (e) {
           newItem.type = ItemType.none;
           newItem.country = Country.none;
@@ -302,7 +305,8 @@ class ItemListTabState extends State<ItemListTab> {
           newItem.vintage = 0;
           newItem.stock = 0;
           newItem.sold = 0;
-          newItem.producer = 0;
+          newItem.producer = await widget.dbHelper.getProducerID('NONE');
+          newItem.description = "";
         }
 
         if (dirExists) {
