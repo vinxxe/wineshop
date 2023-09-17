@@ -42,7 +42,7 @@ dependencies:
   flutter_image_compress: ^2.0.4
   path_provider: ^2.1.0
   path: ^1.8.3
-  permission_handler: ^10.4.3
+  permission_handler: ^11.0.0
 
 dev_dependencies:
   flutter_test:
