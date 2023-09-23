@@ -1,12 +1,16 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'widgets/insert_item_tab.dart';
 import 'widgets/item_list_tab.dart';
 import 'widgets/item_order_tab.dart';
 import 'database/db_helper.dart';
 import 'models/global_info.dart';
-
 void main() {
+  if (Platform.isLinux || Platform.isWindows) {
+    databaseFactory = databaseFactoryFfi;
+  }
   runApp(const WineShopApp());
 }
 
