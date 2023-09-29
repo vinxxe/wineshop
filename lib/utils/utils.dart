@@ -21,13 +21,13 @@ class Utils {
   }
 
   static Future<String> getExtDir() async {
-//    PermissionStatus status = await Permission.manageExternalStorage.status;
-//    if (!status.isGranted) {
-//      do {
-//        await Permission.manageExternalStorage.request();
-//        status = await Permission.manageExternalStorage.status;
-//      } while (!status.isGranted);
-//    }
+    PermissionStatus status = await Permission.manageExternalStorage.status;
+    if (!status.isGranted) {
+      do {
+        await Permission.manageExternalStorage.request();
+        status = await Permission.manageExternalStorage.status;
+      } while (!status.isGranted);
+    }
 
     String? dir = await FilePicker.platform.getDirectoryPath();
 
