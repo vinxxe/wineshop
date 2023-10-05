@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import "order_item.dart";
 
 enum OrderStatus {
@@ -66,16 +67,15 @@ class Order {
   Order({
     this.orderId = 0,
     this.userId = 0,
-    required this.orderDate,
-    required this.totalAmount,
+    DateTime? orderDate,
+    this.totalAmount = 0.0,
     this.status = OrderStatus.pending,
-  });
+  }) : orderDate = orderDate ?? DateTime.now();
 
   Map<String, dynamic> toMap() {
     return {
-      'order_id': orderId,
       'user_id': userId,
-      'order_date': orderDate.toIso8601String(),
+      'order_date': DateFormat('yyyy-mm-dd').format(orderDate),
       'total_amount': totalAmount,
       'status': status.id,
     };

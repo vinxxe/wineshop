@@ -5,7 +5,7 @@ import 'package:wine_shop/database/db_helper.dart';
 import 'package:wine_shop/models/item.dart';
 import 'package:wine_shop/models/order.dart';
 import 'package:wine_shop/models/order_item.dart';
-//import 'package:wine_shop/utils/utils.dart';
+import 'package:wine_shop/utils/utils.dart';
 import 'package:wine_shop/models/global_info.dart';
 
 import 'select_item_screen.dart';
@@ -48,6 +48,7 @@ class ItemOrderTabState extends State<ItemOrderTab> {
                   final item = snapshot.data![index];
                   return InkWell(
                     onTap: () async {
+                      if (widget.globalInfo.currOrder != null){
                       final shouldUpdate = await Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -57,6 +58,9 @@ class ItemOrderTabState extends State<ItemOrderTab> {
                         setState(() {
                           shouldUpdateList = true;
                         });
+                      }
+                      } else {
+                        Utils.usrMsg(context, "NO ORDER", "Please, create a new order!");
                       }
                     },
                     child: ListTile(
@@ -79,8 +83,16 @@ class ItemOrderTabState extends State<ItemOrderTab> {
               FloatingActionButton(
                 heroTag: "ht10",
                 onPressed: () async {
-                  Order? lastOrder = await widget.dbHelper
-                      .getOrder(widget.globalInfo.lastOrderId);
+                  if (widget.globalInfo.currOrder == null) {
+                    print("no order created");
+                    Order newOrder = Order();
+                    newOrder.orderId = await widget.dbHelper.insertOrder(newOrder);
+                    widget.globalInfo.currOrder = newOrder;
+                  } else {
+                    print (widget.globalInfo.currOrder!.orderId);
+                    print (widget.globalInfo.currOrder!.orderDate);
+                    widget.globalInfo.currOrder = null;
+                  }
                   setState(() {
                     _filterKeyword = ''; // Clear the filter keyword
                   });

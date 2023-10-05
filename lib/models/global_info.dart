@@ -1,3 +1,5 @@
+import "order.dart";
+
 class GlobalInfo {
   // Private constructor
   GlobalInfo._();
@@ -11,6 +13,6 @@ class GlobalInfo {
   // String property
   String workingFolder = ""; // Initialize with a default value
 
-  // Last Order id
-  int lastOrderId = -1;
+  // Current Order id
+  Order? currOrder;
 }
