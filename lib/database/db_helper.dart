@@ -1,4 +1,5 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:intl/intl.dart';
 import 'package:wine_shop/models/item.dart';
 import 'package:wine_shop/models/order.dart';
 import 'package:wine_shop/models/order_item.dart';
@@ -304,6 +305,9 @@ class DatabaseHelper {
         status INTEGER,
         FOREIGN KEY (user_id) REFERENCES Users(user_id)
       )
+    ''');
+    await db.execute('''
+      INSERT OR IGNORE INTO Orders (order_id, user_id, order_date, total_amount, status) VALUES (100, 100, ${DateFormat('yyyy-mm-dd').format(DateTime.utc(1970, 1, 1))}, 0.0, ${OrderStatus.completed.id});
     ''');
 
     await db.execute('''
