@@ -48,19 +48,21 @@ class ItemOrderTabState extends State<ItemOrderTab> {
                   final item = snapshot.data![index];
                   return InkWell(
                     onTap: () async {
-                      if (widget.globalInfo.currOrder != null){
-                      final shouldUpdate = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => SelectItemScreen(item: item)),
-                      );
-                      if (shouldUpdate == true) {
-                        setState(() {
-                          shouldUpdateList = true;
-                        });
-                      }
+                      if (widget.globalInfo.currOrder != null) {
+                        final shouldUpdate = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  SelectItemScreen(item: item)),
+                        );
+                        if (shouldUpdate == true) {
+                          setState(() {
+                            shouldUpdateList = true;
+                          });
+                        }
                       } else {
-                        Utils.usrMsg(context, "NO ORDER", "Please, create a new order!");
+                        Utils.usrMsg(
+                            context, "NO ORDER", "Please, create a new order!");
                       }
                     },
                     child: ListTile(
@@ -86,11 +88,12 @@ class ItemOrderTabState extends State<ItemOrderTab> {
                   if (widget.globalInfo.currOrder == null) {
                     print("no order created");
                     Order newOrder = Order();
-                    newOrder.orderId = await widget.dbHelper.insertOrder(newOrder);
+                    newOrder.orderId =
+                        await widget.dbHelper.insertOrder(newOrder);
                     widget.globalInfo.currOrder = newOrder;
                   } else {
-                    print (widget.globalInfo.currOrder!.orderId);
-                    print (widget.globalInfo.currOrder!.orderDate);
+                    print(widget.globalInfo.currOrder!.orderId);
+                    print(widget.globalInfo.currOrder!.orderDate);
                     widget.globalInfo.currOrder = null;
                   }
                   setState(() {
