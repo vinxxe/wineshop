@@ -10,9 +10,6 @@ class GlobalInfo {
   // Getter for the singleton instance
   static GlobalInfo get instance => _instance;
 
-  // String property
-  String workingFolder = ""; // Initialize with a default value
-
   // Current Order id
   Order? currOrder;
 }

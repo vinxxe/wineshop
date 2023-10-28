@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class Utils {
   // Prevent instantiation by making the constructor private
@@ -21,14 +20,6 @@ class Utils {
   }
 
   static Future<String> getExtDir() async {
-    PermissionStatus status = await Permission.manageExternalStorage.status;
-    if (!status.isGranted) {
-      do {
-        await Permission.manageExternalStorage.request();
-        status = await Permission.manageExternalStorage.status;
-      } while (!status.isGranted);
-    }
-
     String? dir = await FilePicker.platform.getDirectoryPath();
 
     if (dir != null) {
@@ -38,7 +29,7 @@ class Utils {
     }
   }
 
-  static Future<String?> pickCSVFile() async {
+  static Future<String?> pickCSVFileToLoad() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv'],
@@ -49,6 +40,15 @@ class Utils {
     } else {
       return null;
     }
+  }
+
+  static Future<String?> pickCSVFileToSave() async {
+    return await FilePicker.platform.saveFile(
+        dialogTitle: 'Choose the csv filename:',
+        fileName: 'output.csv',
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+        lockParentWindow: true);
   }
 
   static void usrMsg(BuildContext context, String title, String message) {

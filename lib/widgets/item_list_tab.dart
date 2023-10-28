@@ -134,26 +134,16 @@ class ItemListTabState extends State<ItemListTab> {
               ),
               const SizedBox(height: 16),
               FloatingActionButton(
-                heroTag: "ht3",
-                onPressed: () async {
-                  widget.globalInfo.workingFolder = await Utils.getExtDir();
-                },
-                tooltip: 'Set the working dir',
-                child: const Icon(Icons.folder_shared),
-              ),
-              const SizedBox(height: 16),
-              FloatingActionButton(
                 heroTag: "ht4",
                 onPressed: () async {
-                  if (widget.globalInfo.workingFolder.isNotEmpty) {
-                    final String? filePath = await Utils.pickCSVFile();
-                    if (filePath != null) {
+                  final String? filePath = await Utils.pickCSVFileToLoad();
+                  if (filePath != null && filePath.isNotEmpty) {
+                    try {
                       await loadCSVFileIntoDatabase(filePath);
-                    }
-                  } else {
-                    if (context.mounted) {
-                      Utils.usrMsg(
-                          context, "DIR ERROR", "no working dir chosen");
+                    } catch (e) {
+                      if (context.mounted) {
+                        Utils.usrMsg(context, "EXCEPTION", e.toString());
+                      }
                     }
                   }
                 },
@@ -163,54 +153,28 @@ class ItemListTabState extends State<ItemListTab> {
               const SizedBox(height: 16),
               FloatingActionButton(
                 heroTag: "ht5",
-                onPressed: () {
-                  if (widget.globalInfo.workingFolder.isNotEmpty) {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        final exportFileNameController =
-                            TextEditingController();
-                        return AlertDialog(
-                          title: const Text('Export Database to CSV'),
-                          content: TextField(
-                            controller: exportFileNameController,
-                            decoration:
-                                const InputDecoration(labelText: 'File Name'),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                final fileName = exportFileNameController.text;
-                                if (fileName.isNotEmpty) {
-                                  exportDatabaseToCSV(fileName);
-                                  Navigator.pop(context);
-                                }
-                              },
-                              child: const Text('Export'),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancel'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  } else {
-                    if (context.mounted) {
-                      Utils.usrMsg(
-                          context, "DIR ERROR", "no working dir chosen");
+                onPressed: () async {
+                  final String? filePath = await Utils.pickCSVFileToSave();
+                  if (filePath != null && filePath.isNotEmpty) {
+                    try {
+                      exportDatabaseToCSV(filePath);
+                    } catch (e) {
+                      if (context.mounted) {
+                        Utils.usrMsg(context, "EXCEPTION", e.toString());
+                      }
                     }
                   }
                 },
+                tooltip: 'Save CSV',
                 child: const Icon(Icons.file_download), // Use a suitable icon
               )
             ]));
   }
 
-  Future<void> exportDatabaseToCSV(String fileName) async {
-    final file = File('${widget.globalInfo.workingFolder}/$fileName.csv');
-
+  Future<void> exportDatabaseToCSV(String filePath) async {
+    if (path.extension(filePath).isEmpty) {
+      filePath = "$filePath.csv";
+    }
     final items = await widget.dbHelper.getAllItemsOrderedByName();
     final attributeNames = [
       'Name',
@@ -242,38 +206,39 @@ class ItemListTabState extends State<ItemListTab> {
     ];
 
     final csvString = const ListToCsvConverter().convert(csvRows);
-
+    File file = File(filePath);
     await file.writeAsString(csvString);
-    await Utils.createDirectoryIfNotExists(
-        '${widget.globalInfo.workingFolder}/$fileName');
+
+    String csvDir = path.dirname(filePath);
+    String csvName = path.basenameWithoutExtension(filePath);
+    await Utils.createDirectoryIfNotExists('$csvDir/$csvName/');
 
     for (var item in items) {
       if (item.image != null) {
-        final file = File(
-            '${widget.globalInfo.workingFolder}/$fileName/${item.name}.jpg');
+        final file = File('$csvDir/$csvName/${item.name}.jpg');
         await file.writeAsBytes(item.image!);
       }
     }
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Database exported to ${file.path}')),
+        SnackBar(content: Text('Database exported to $filePath')),
       );
     }
   }
 
   Future<void> loadCSVFileIntoDatabase(String filePath) async {
+    final dirname = path.dirname(filePath);
     final basename = path.basename(filePath);
     final dirbasename = path.basenameWithoutExtension(basename);
 
-    final file = File('${widget.globalInfo.workingFolder}/$basename');
+    final file = File(filePath);
     final String csvString = await file.readAsString();
     final List<List<dynamic>> csvTable =
         const CsvToListConverter().convert(csvString);
     bool dirExists = false;
 
-    if (await Utils.doesDirectoryExist(
-        '${widget.globalInfo.workingFolder}/$dirbasename')) {
+    if (await Utils.doesDirectoryExist('$dirname/$dirbasename')) {
       dirExists = true;
     }
 
@@ -310,19 +275,12 @@ class ItemListTabState extends State<ItemListTab> {
         }
 
         if (dirExists) {
-          final file =
-              File('${widget.globalInfo.workingFolder}/$dirbasename/$name.jpg');
+          final file = File('$dirname/$dirbasename/$name.jpg');
           if (await file.exists()) {
             newItem.image = await file.readAsBytes();
           }
         }
-        try {
-          await widget.dbHelper.insertItem(newItem);
-        } catch (e) {
-          if (context.mounted) {
-            Utils.usrMsg(context, "DB exception", e.toString());
-          }
-        }
+        await widget.dbHelper.insertItem(newItem);
       }
     }
 
