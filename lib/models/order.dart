@@ -72,6 +72,18 @@ class Order {
     this.status = OrderStatus.pending,
   }) : orderDate = orderDate ?? DateTime.now();
 
+  addItem(OrderItem item) {
+    if (items.contains(item)) {
+      int idx = items.indexWhere((litem) => litem == item);
+      totalAmount -= items[idx].subtotal;
+      items[idx] = item;
+      totalAmount += items[idx].subtotal;
+    } else {
+      items.add(item);
+      totalAmount += item.subtotal;
+    }
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'user_id': userId,

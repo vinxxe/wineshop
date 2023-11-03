@@ -12,6 +12,21 @@ class OrderItem {
       this.quantity = 0,
       this.subtotal = 0.0});
 
+  void updateQuantity(int quantity, double subtotal) {
+    this.quantity = quantity;
+    this.subtotal = subtotal;
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is OrderItem &&
+          orderId  == other.orderId  &&
+          itemName == other.itemName;
+
+  @override
+  int get hashCode => itemName.hashCode ^ orderId.hashCode;
+
   Map<String, dynamic> toMap() {
     return {
       'order_item_id': orderItemId,

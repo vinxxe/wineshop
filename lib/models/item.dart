@@ -208,6 +208,6 @@ class Item {
 
   @override
   String toString() {
-    return '$name - \$${price.toStringAsFixed(2)}';
+    return '$name - \u20AC ${price.toStringAsFixed(2)}';
   }
 }

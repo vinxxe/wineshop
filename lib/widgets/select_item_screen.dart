@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-//import 'package:wine_shop/database/db_helper.dart';
+import 'package:wine_shop/models/global_info.dart';
+import 'package:wine_shop/database/db_helper.dart';
 import 'package:wine_shop/models/item.dart';
+import 'package:wine_shop/models/order_item.dart';
+import 'package:wine_shop/models/order.dart';
 
 class SelectItemScreen extends StatefulWidget {
   static final GlobalKey<SelectItemScreenState> scaffoldKey = GlobalKey();
   final Item item;
+  final dbHelper = DatabaseHelper.instance;
 
   SelectItemScreen({required this.item}) : super(key: scaffoldKey);
 
@@ -16,6 +20,8 @@ class SelectItemScreenState extends State<SelectItemScreen> {
   int itemCount = 1;
   final TextEditingController countController = TextEditingController();
   late Item _item;
+  late OrderItem _orderItem;
+  Order          _currOrder = GlobalInfo.instance.currOrder!;
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +87,13 @@ class SelectItemScreenState extends State<SelectItemScreen> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
+                            // insert item into database
+                            _orderItem.updateQuantity(
+                              itemCount,
+                              itemCount*_item.price
+                            );
+                            _currOrder.addItem(_orderItem);
+                            widget.dbHelper.updateOrder(_currOrder);
                             if (context.mounted) {
                               Navigator.pop(
                                   context, true); // Go back to previous screen
@@ -105,6 +118,11 @@ class SelectItemScreenState extends State<SelectItemScreen> {
   void initState() {
     super.initState();
     _item = widget.item;
+    _orderItem = OrderItem(
+      orderId  : _currOrder.orderId,
+      itemName : _item.name
+    );
+    itemCount = 1;
     countController.text = '$itemCount';
   }
 }

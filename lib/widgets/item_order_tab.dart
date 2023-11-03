@@ -91,14 +91,13 @@ class ItemOrderTabState extends State<ItemOrderTab> {
                     newOrder.orderId =
                         await widget.dbHelper.insertOrder(newOrder);
                     widget.globalInfo.currOrder = newOrder;
+                    setState(() {
+                      _filterKeyword = ''; // Clear the filter keyword
+                    });
                   } else {
                     print(widget.globalInfo.currOrder!.orderId);
                     print(widget.globalInfo.currOrder!.orderDate);
-                    widget.globalInfo.currOrder = null;
                   }
-                  setState(() {
-                    _filterKeyword = ''; // Clear the filter keyword
-                  });
                 },
                 tooltip: 'Create Order',
                 child: const Icon(Icons.add_shopping_cart_rounded),
