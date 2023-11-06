@@ -26,13 +26,25 @@ class DatabaseHelper {
   Future<Order?> getOrder(int orderId) async {
     Order? res;
     final db = await instance.database;
-    final List<Map<String, dynamic>> result = await db.query(
+    final List<Map<String, dynamic>> res1 = await db.query(
       "Orders",
       where: 'order_id = ?',
       whereArgs: [orderId],
     );
-    if (result.isNotEmpty) {
-      res = Order.fromMap(result[0]);
+
+    if (res1.isNotEmpty) {
+      res = Order.fromMap(res1[0]);
+      // Retrieve all Order_Items for the given order_id
+      final List<Map<String, dynamic>> res2 = await db.query(
+        'Order_Items',
+        where: 'order_id = ?',
+        whereArgs: [orderId],
+      );
+
+      if (res2.isNotEmpty) {
+        res.items = res2.map((json) => OrderItem.fromMap(json)).toList();
+      }
+
     }
     return res;
   }
@@ -147,49 +159,68 @@ class DatabaseHelper {
       where: 'order_id = ?',
       whereArgs: [updatedOrder.orderId],
     );
+    for (int idx = 0; idx < updatedOrder.items.length; idx++) {
+      final int orderItemId = updatedOrder.items[idx].orderItemId;
+      if (orderItemId > 0) {
+        await db.update('Order_Items', updatedOrder.items[idx].toMap(),
+            where: 'order_item_id = ?', whereArgs: [orderItemId]);
+      } else {
+        updatedOrder.items[idx].orderItemId =
+            await db.insert('Order_Items', updatedOrder.items[idx].toMap());
+      }
+    }
   }
 
   // Retrieve all Order_Items for a specific order, validate the total amount,
   // and update the order if necessary
-  Future<List<OrderItem>> getOrderItemsForOrder(int orderId) async {
-    final db = await instance.database;
+  Future<bool> checkOrder(Order order) async {
+    bool res = true;
 
     // Retrieve the order
-    final order = await getOrder(orderId);
+    final lOrder = await getOrder(order.orderId);
+
+    if (lOrder != null) {
+      print('DB ORDER');
+      print(lOrder);
+      print('MEMORY ORDER');
+      print(order);
+      // Check if the total amount matches the calculated sum
+      if (!lOrder.checkTotalAmount()) {
+        print('Order total does not match.');
+        res = false;
+      }
+      if (lOrder != order) {
+        print('Order and db does not match.');
+        res = false;
+      }
+    } else {
+      res = false;
+    }
+    return res;
+  }
+
+  Future<OrderItem> getOrderItem(int orderId, String itemName) async {
+    final db = await instance.database;
 
     // Retrieve all Order_Items for the given order_id
     final List<Map<String, dynamic>> result = await db.query(
       'Order_Items',
-      where: 'order_id = ?',
-      whereArgs: [orderId],
+      where: 'order_id = ? and item_name = ?',
+      whereArgs: [orderId, itemName],
     );
 
-    final orderItems = result.map((json) => OrderItem.fromMap(json)).toList();
+    final Map<String, dynamic>? item = (result.isEmpty ? null : result[0]);
 
-    // Calculate the sum of subtotal from the Order_Items
-    double totalSum = 0.0;
-    for (final item in orderItems) {
-      totalSum += item.subtotal;
-    }
-
-    // Check if the total amount matches the calculated sum
-    if (order != null && order.totalAmount != totalSum) {
-      // Total amount doesn't match, update the order and issue a message
-      final double oldTotalAmount = order.totalAmount;
-      order.totalAmount = totalSum;
-      await updateOrder(order);
-
-      final String message = 'Order total amount updated. '
-          'Old total: $oldTotalAmount, New total: $totalSum';
-
-      print(message); // You can print the message or handle it as needed.
-
-      return orderItems;
+    if (item == null) {
+      return  OrderItem(
+        orderId:  orderId,
+        itemName: itemName
+      );
     } else {
-      // Total amount matches, no update needed
-      return orderItems;
+      return OrderItem.fromMap(item); // Use the fromMap constructor
     }
   }
+
 
   // Insert an order item
   Future<int> insertOrderItem(OrderItem orderItem) async {

@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:collection/collection.dart';
 import "order_item.dart";
 
 enum OrderStatus {
@@ -71,6 +72,46 @@ class Order {
     this.totalAmount = 0.0,
     this.status = OrderStatus.pending,
   }) : orderDate = orderDate ?? DateTime.now();
+
+  @override
+  String toString() {
+    String res = '';
+    res += '\n$orderId';
+    res += '\n$userId';
+    res += '\n$orderDate';
+    res += '\n$totalAmount';
+    res += '\n$status';
+    for (var item in items) {
+      res += '\n${item.orderItemId}, ${item.orderId}, ${item.itemName} - ${item.quantity} \u20AC ${item.subtotal}';
+    }
+    return res;
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Order &&
+          orderId == other.orderId &&
+          userId == other.userId &&
+          totalAmount == other.totalAmount &&
+          status == other.status &&
+          (const DeepCollectionEquality()).equals(items, other.items);
+
+  @override
+  int get hashCode => orderId.hashCode;
+
+  bool checkTotalAmount() {
+      // Calculate the sum of subtotal from the Order_Items
+      double totalSum = 0.0;
+      for (final item in items) {
+        totalSum += item.subtotal;
+      }
+
+      const mult = 1000.0;
+      final sumA = (totalSum*mult).round()/mult;
+      final sumB = (totalAmount*mult).round()/mult;
+      return sumA == sumB;
+  }
 
   addItem(OrderItem item) {
     if (items.contains(item)) {

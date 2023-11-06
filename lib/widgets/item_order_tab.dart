@@ -95,8 +95,9 @@ class ItemOrderTabState extends State<ItemOrderTab> {
                       _filterKeyword = ''; // Clear the filter keyword
                     });
                   } else {
-                    print(widget.globalInfo.currOrder!.orderId);
-                    print(widget.globalInfo.currOrder!.orderDate);
+                    if (await widget.dbHelper.checkOrder(widget.globalInfo.currOrder!)) {
+                      print('CIUCCESS');
+                    }
                   }
                 },
                 tooltip: 'Create Order',

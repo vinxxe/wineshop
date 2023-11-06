@@ -18,18 +18,22 @@ class OrderItem {
   }
 
   @override
+  String toString() {
+    return '$orderItemId, $orderId, $itemName - $quantity \u20AC $subtotal';
+  }
+
+  @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is OrderItem &&
-          orderId  == other.orderId  &&
+          orderId == other.orderId &&
           itemName == other.itemName;
 
   @override
-  int get hashCode => itemName.hashCode ^ orderId.hashCode;
+  int get hashCode => orderItemId.hashCode;
 
   Map<String, dynamic> toMap() {
     return {
-      'order_item_id': orderItemId,
       'order_id': orderId,
       'item_name': itemName,
       'quantity': quantity,

@@ -21,7 +21,7 @@ class SelectItemScreenState extends State<SelectItemScreen> {
   final TextEditingController countController = TextEditingController();
   late Item _item;
   late OrderItem _orderItem;
-  Order          _currOrder = GlobalInfo.instance.currOrder!;
+  final Order    _currOrder = GlobalInfo.instance.currOrder!;
 
   @override
   Widget build(BuildContext context) {
@@ -86,14 +86,14 @@ class SelectItemScreenState extends State<SelectItemScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             // insert item into database
                             _orderItem.updateQuantity(
                               itemCount,
                               itemCount*_item.price
                             );
                             _currOrder.addItem(_orderItem);
-                            widget.dbHelper.updateOrder(_currOrder);
+                            await widget.dbHelper.updateOrder(_currOrder);
                             if (context.mounted) {
                               Navigator.pop(
                                   context, true); // Go back to previous screen
@@ -117,12 +117,17 @@ class SelectItemScreenState extends State<SelectItemScreen> {
   @override
   void initState() {
     super.initState();
+    _initData();
+  }
+
+  Future<void> _initData() async {
+    super.initState();
     _item = widget.item;
-    _orderItem = OrderItem(
-      orderId  : _currOrder.orderId,
-      itemName : _item.name
+    _orderItem = await widget.dbHelper.getOrderItem(
+      _currOrder.orderId,
+      _item.name
     );
-    itemCount = 1;
+    itemCount = _orderItem.quantity;
     countController.text = '$itemCount';
   }
 }
