@@ -9,6 +9,7 @@ import 'package:wine_shop/utils/utils.dart';
 import 'package:wine_shop/models/global_info.dart';
 
 import 'select_item_screen.dart';
+import 'order_details_screen.dart';
 
 class ItemOrderTab extends StatefulWidget {
   static final GlobalKey<ItemOrderTabState> scaffoldKey = GlobalKey();
@@ -95,8 +96,25 @@ class ItemOrderTabState extends State<ItemOrderTab> {
                       _filterKeyword = ''; // Clear the filter keyword
                     });
                   } else {
-                    if (await widget.dbHelper.checkOrder(widget.globalInfo.currOrder!)) {
-                      print('CIUCCESS');
+                    if (await widget.dbHelper
+                        .checkOrder(widget.globalInfo.currOrder!)) {
+                      if (context.mounted) {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => OrderDetailsScreen(
+                                  order: widget.globalInfo.currOrder!)),
+                        );
+                      }
+                      if (widget.globalInfo.currOrder!.status ==
+                          OrderStatus.pending) {
+                        widget.globalInfo.currOrder = await widget.dbHelper
+                            .getOrder(widget.globalInfo.currOrder!.orderId);
+                        print(widget.globalInfo.currOrder!);
+                      } else {
+                        print(widget.globalInfo.currOrder!);
+                        widget.globalInfo.currOrder = null;
+                      }
                     }
                   }
                 },

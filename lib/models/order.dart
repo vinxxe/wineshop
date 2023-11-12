@@ -76,13 +76,13 @@ class Order {
   @override
   String toString() {
     String res = '';
-    res += '\n$orderId';
-    res += '\n$userId';
-    res += '\n$orderDate';
-    res += '\n$totalAmount';
-    res += '\n$status';
+    res += '\nID    : $orderId';
+    res += '\nUID   : $userId';
+    res += '\nDate  : $orderDate';
+    res += '\nTot   : $totalAmount';
+    res += '\nStatus: $status';
     for (var item in items) {
-      res += '\n${item.orderItemId}, ${item.orderId}, ${item.itemName} - ${item.quantity} \u20AC ${item.subtotal}';
+      res += item.toString();
     }
     return res;
   }
@@ -101,34 +101,60 @@ class Order {
   int get hashCode => orderId.hashCode;
 
   bool checkTotalAmount() {
-      // Calculate the sum of subtotal from the Order_Items
-      double totalSum = 0.0;
-      for (final item in items) {
-        totalSum += item.subtotal;
-      }
+    // Calculate the sum of subtotal from the Order_Items
+    double totalSum = 0.0;
+    for (final item in items) {
+      totalSum += item.subtotal;
+    }
 
-      const mult = 1000.0;
-      final sumA = (totalSum*mult).round()/mult;
-      final sumB = (totalAmount*mult).round()/mult;
-      return sumA == sumB;
+    const mult = 1000.0;
+    final sumA = (totalSum * mult).round() / mult;
+    final sumB = (totalAmount * mult).round() / mult;
+    return sumA == sumB;
   }
 
-  addItem(OrderItem item) {
-    if (items.contains(item)) {
-      int idx = items.indexWhere((litem) => litem == item);
-      totalAmount -= items[idx].subtotal;
-      items[idx] = item;
-      totalAmount += items[idx].subtotal;
+  bool addItem(OrderItem item) {
+    bool res = false;
+    if (checkTotalAmount()) {
+      if (items.contains(item)) {
+        int idx = items.indexWhere((litem) => litem == item);
+        items[idx] = item;
+        totalAmount = 0;
+        for (final item in items) {
+          totalAmount += item.subtotal;
+        }
+      } else {
+        items.add(item);
+        totalAmount += item.subtotal;
+        res = true;
+      }
     } else {
-      items.add(item);
-      totalAmount += item.subtotal;
+      print("ITEM ADD: WRONG ORDER TOTAL");
     }
+    return res;
+  }
+
+  bool delItem(OrderItem item) {
+    bool res = false;
+    if (checkTotalAmount()) {
+      if (items.contains(item)) {
+        items.remove(item);
+        totalAmount = 0;
+        for (final item in items) {
+          totalAmount += item.subtotal;
+        }
+        res = true;
+      }
+    } else {
+      print("ITEM DEL: WRONG ORDER TOTAL");
+    }
+    return res;
   }
 
   Map<String, dynamic> toMap() {
     return {
       'user_id': userId,
-      'order_date': DateFormat('yyyy-mm-dd').format(orderDate),
+      'order_date': DateFormat('yyyy-MM-dd HH:mm:ss').format(orderDate),
       'total_amount': totalAmount,
       'status': status.id,
     };
@@ -139,12 +165,8 @@ class Order {
       orderId: map['order_id'],
       userId: map['user_id'],
       orderDate: DateTime.parse(map['order_date']),
-      totalAmount: map['total_amount'],
+      totalAmount: (map['total_amount'] as num).toDouble(),
       status: OrderStatusExt.getOrderStatus(map['status']),
     );
-  }
-
-  void addOrderItem(OrderItem item) {
-    items.add(item);
   }
 }

@@ -178,7 +178,7 @@ class Item {
     return Item(
         id: map['item_id'],
         name: map['name'],
-        price: map['price'],
+        price: (map['price'] as num).toDouble(),
         image: map['image'],
         type: ItemExt.getItemType(map['type']),
         country: CountryExt.getCountry(map['country']),
@@ -208,6 +208,6 @@ class Item {
 
   @override
   String toString() {
-    return '$name - \u20AC ${price.toStringAsFixed(2)}';
+    return '$name - \u20AC${price.toStringAsFixed(2)}';
   }
 }

@@ -3,23 +3,18 @@ class OrderItem {
   int orderId;
   String itemName;
   int quantity;
-  double subtotal;
+  double price;
 
   OrderItem(
       {this.orderItemId = 0,
       this.orderId = 0,
       required this.itemName,
       this.quantity = 0,
-      this.subtotal = 0.0});
-
-  void updateQuantity(int quantity, double subtotal) {
-    this.quantity = quantity;
-    this.subtotal = subtotal;
-  }
+      required this.price});
 
   @override
   String toString() {
-    return '$orderItemId, $orderId, $itemName - $quantity \u20AC $subtotal';
+    return '\n$orderItemId, $orderId, $itemName - ($quantity * \u20AC$price) \u20AC$subtotal';
   }
 
   @override
@@ -32,12 +27,14 @@ class OrderItem {
   @override
   int get hashCode => orderItemId.hashCode;
 
+  double get subtotal => (quantity * price);
+
   Map<String, dynamic> toMap() {
     return {
       'order_id': orderId,
       'item_name': itemName,
       'quantity': quantity,
-      'subtotal': subtotal,
+      'price': price,
     };
   }
 
@@ -47,7 +44,7 @@ class OrderItem {
       orderId: map['order_id'],
       itemName: map['item_name'],
       quantity: map['quantity'],
-      subtotal: map['subtotal'],
+      price: (map['price'] as num).toDouble(),
     );
   }
 }

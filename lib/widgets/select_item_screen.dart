@@ -21,7 +21,7 @@ class SelectItemScreenState extends State<SelectItemScreen> {
   final TextEditingController countController = TextEditingController();
   late Item _item;
   late OrderItem _orderItem;
-  final Order    _currOrder = GlobalInfo.instance.currOrder!;
+  final Order _currOrder = GlobalInfo.instance.currOrder!;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +33,7 @@ class SelectItemScreenState extends State<SelectItemScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    '${_item.name} - \u20AC ${_item.price}',
+                    '${_item.name} - \u20AC${_item.price}',
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 20.0),
                   ),
@@ -53,7 +53,7 @@ class SelectItemScreenState extends State<SelectItemScreen> {
                           icon: const Icon(Icons.remove),
                           onPressed: () {
                             setState(() {
-                              if (itemCount > 1) {
+                              if (itemCount > 0) {
                                 itemCount--;
                                 countController.text = '$itemCount';
                               }
@@ -87,12 +87,17 @@ class SelectItemScreenState extends State<SelectItemScreen> {
                       children: [
                         ElevatedButton(
                           onPressed: () async {
-                            // insert item into database
-                            _orderItem.updateQuantity(
-                              itemCount,
-                              itemCount*_item.price
-                            );
-                            _currOrder.addItem(_orderItem);
+                            // insert item into database if itemCount > 0
+                            if (itemCount > 0) {
+                              _orderItem.quantity = itemCount;
+                              _currOrder.addItem(_orderItem);
+                            } else {
+                              // either delete the order item or do nothing
+                              if (_currOrder.delItem(_orderItem)) {
+                                widget.dbHelper
+                                    .deleteOrderItem(_orderItem.orderItemId);
+                              }
+                            }
                             await widget.dbHelper.updateOrder(_currOrder);
                             if (context.mounted) {
                               Navigator.pop(
@@ -123,10 +128,8 @@ class SelectItemScreenState extends State<SelectItemScreen> {
   Future<void> _initData() async {
     super.initState();
     _item = widget.item;
-    _orderItem = await widget.dbHelper.getOrderItem(
-      _currOrder.orderId,
-      _item.name
-    );
+    _orderItem = await widget.dbHelper
+        .getOrderItem(_currOrder.orderId, _item.name, _item.price);
     itemCount = _orderItem.quantity;
     countController.text = '$itemCount';
   }

@@ -23,6 +23,10 @@ class DatabaseHelper {
     return _database!;
   }
 
+  /*
+  given the orderId, retrieve the Order from the Orders table
+  and retrieve all the order items belonging to such order.
+  */
   Future<Order?> getOrder(int orderId) async {
     Order? res;
     final db = await instance.database;
@@ -44,7 +48,6 @@ class DatabaseHelper {
       if (res2.isNotEmpty) {
         res.items = res2.map((json) => OrderItem.fromMap(json)).toList();
       }
-
     }
     return res;
   }
@@ -180,13 +183,15 @@ class DatabaseHelper {
     final lOrder = await getOrder(order.orderId);
 
     if (lOrder != null) {
-      print('DB ORDER');
-      print(lOrder);
-      print('MEMORY ORDER');
-      print(order);
       // Check if the total amount matches the calculated sum
       if (!lOrder.checkTotalAmount()) {
+        print('DB Order total does not match.');
+        print(lOrder);
+        res = false;
+      }
+      if (!order.checkTotalAmount()) {
         print('Order total does not match.');
+        print(order);
         res = false;
       }
       if (lOrder != order) {
@@ -199,7 +204,8 @@ class DatabaseHelper {
     return res;
   }
 
-  Future<OrderItem> getOrderItem(int orderId, String itemName) async {
+  Future<OrderItem> getOrderItem(
+      int orderId, String itemName, double price) async {
     final db = await instance.database;
 
     // Retrieve all Order_Items for the given order_id
@@ -212,15 +218,11 @@ class DatabaseHelper {
     final Map<String, dynamic>? item = (result.isEmpty ? null : result[0]);
 
     if (item == null) {
-      return  OrderItem(
-        orderId:  orderId,
-        itemName: itemName
-      );
+      return OrderItem(orderId: orderId, itemName: itemName, price: price);
     } else {
       return OrderItem.fromMap(item); // Use the fromMap constructor
     }
   }
-
 
   // Insert an order item
   Future<int> insertOrderItem(OrderItem orderItem) async {
@@ -331,7 +333,7 @@ class DatabaseHelper {
       CREATE TABLE Orders (
         order_id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
-        order_date DATE NOT NULL,
+        order_date DATETIME NOT NULL,
         total_amount REAL NOT NULL,
         status INTEGER,
         FOREIGN KEY (user_id) REFERENCES Users(user_id)
@@ -347,7 +349,7 @@ class DatabaseHelper {
         order_id INTEGER NOT NULL,
         item_name TEXT NOT NULL,
         quantity INTEGER NOT NULL,
-        subtotal REAL NOT NULL,
+        price REAL NOT NULL,
         FOREIGN KEY (order_id) REFERENCES Orders (order_id),
         FOREIGN KEY (item_name) REFERENCES $tableItemsName (name)
       )
